@@ -1,5 +1,5 @@
 [root]
-name = "mr_t_init"
+name = "lovely_touching"
 version = "0.1.0"
 dependencies = [
  "bitflags 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",

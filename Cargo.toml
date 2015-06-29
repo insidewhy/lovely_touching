@@ -1,7 +1,7 @@
 [package]
-name = "mr_t_init"
+name = "lovely_touching"
 version = "0.1.0"
-authors = ["James Pike <jpike@chilon.net>"]
+authors = ["James Pike <github@chilon.net>"]
 
 [dependencies]
 getopts = "^0.2"
