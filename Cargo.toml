@@ -6,3 +6,4 @@ authors = ["James Pike <jpike@chilon.net>"]
 [dependencies]
 getopts = "^0.2"
 libc = "^0.1"
+bitflags = "^0.3"
