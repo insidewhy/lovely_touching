@@ -19,6 +19,7 @@ use getopts::Options;
 extern crate bitflags;
 
 bitflags!(
+  #[repr(C)]
   flags SockFlag: libc::c_ulong {
     const SA_NOCLDSTOP = 0x00000001,
     const SA_NOCLDWAIT = 0x00000002,
@@ -126,7 +127,7 @@ unsafe fn run_command(cmd_and_args: &Vec<String>) -> pid_t {
   return pid;
 }
 
-extern fn accept_term(val: libc::c_int) {
+extern fn accept_term(_signal: libc::c_int) {
   unsafe {
     RUNNING = false;
   }
@@ -154,9 +155,8 @@ fn main() {
     sigaction(SIGTERM, &sa, ptr::null_mut());
     sigaction(SIGINT, &sa, ptr::null_mut());
 
-    // TODO: set up signal handlers
     main_pid = run_command(&matches.free);
-    println!("pid is {}", main_pid);
   }
+  println!("pid is {}", main_pid);
   waitpid_reap_other_children(main_pid);
 }
