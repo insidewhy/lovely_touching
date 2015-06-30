@@ -115,7 +115,6 @@ unsafe fn run_commands(cmd_and_args: &Vec<String>) -> Vec<pid_t> {
 
   let mut ret = Vec::<pid_t>::new();
 
-  let mut i = 0;
   let cmds = cmd_and_args.split(|s| s == "---");
   for cmd in cmds {
     let pid = fork();
@@ -134,7 +133,7 @@ unsafe fn run_commands(cmd_and_args: &Vec<String>) -> Vec<pid_t> {
 
       execvp(
         CString::new(cmd[0].clone()).unwrap().as_ptr(),
-        arg_ptrs.as_ptr() as (*mut *const i8)
+        arg_ptrs.as_mut_ptr()
       );
       panic!("execvp failed");
     }
