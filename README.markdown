@@ -19,6 +19,18 @@ Now you don't have to worry anymore!
 
 `lovely_touching` is written in `rust` so you don't need anything installed in the host machine to use the binary.
 
+## Building
+
+```
+cargo build --release
+```
+
+Or to build a copy against Centos5's glibc (so it can run on more machines) first install docker, then run this as a user with access to docker:
+
+```
+./build-release.sh
+```
+
 ## More stuff
 
 If you want to run multiple processes you can separate them with the argument `---`:
