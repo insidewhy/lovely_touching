@@ -6,7 +6,7 @@ Hey maybe your Docker file contains something like this:
 CMD ["/bin/node", "app.js"]
 ```
 
-Oh no [this is no good!](https://blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/): TLDR: Your process can get shutdown in a bad way and *zombie processes* will destroy you!
+Oh no [this is no good!](https://blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/) - TLDR: Your process can get shutdown in a bad way and *zombie processes* will destroy you!
 
 Instead just use `lovely_touching` and change your `Dockerfile` to this:
 
