@@ -73,7 +73,7 @@ const WNOHANG: libc::c_int = 1;
 // how often to check if the process should halt in milliseconds
 const HALT_RESOLUTION: u32 = 100;
 
-fn waitpid_reap_other_children(pid: pid_t) {
+fn wait_for_commands_to_exit(pids: &mut Vec<pid_t>) {
   loop {
     let status: i32 = 0;
     let waited_pid: pid_t;
@@ -83,9 +83,17 @@ fn waitpid_reap_other_children(pid: pid_t) {
     if waited_pid == 0 {
       thread::sleep_ms(HALT_RESOLUTION);
     }
-    else if waited_pid == pid {
-      println!("exited {}", waited_pid);
-      return;
+    else {
+      match pids.iter().position(|p| *p == waited_pid) {
+        Some(idx) => {
+          pids.remove(idx);
+          println!("exited {}", waited_pid);
+          if pids.is_empty() {
+            return;
+          }
+        }
+        None => {}
+      }
     }
 
     unsafe {
@@ -102,29 +110,41 @@ fn print_usage(program: &str, opts: Options) {
   print!("{}", opts.usage(&brief));
 }
 
-unsafe fn run_command(cmd_and_args: &Vec<String>) -> pid_t {
+unsafe fn run_commands(cmd_and_args: &Vec<String>) -> Vec<pid_t> {
   println!("running `{}'", cmd_and_args.connect(" "));
-  let pid = fork();
-  if pid == 0 {
-    let mut cstrings = Vec::<CString>::new();
-    let mut arg_ptrs = Vec::<*const i8>::new();
 
-    cstrings.reserve(cmd_and_args.len());
-    arg_ptrs.reserve(cmd_and_args.len() + 1);
+  let mut ret = Vec::<pid_t>::new();
 
-    for arg in cmd_and_args.iter() {
-      cstrings.push(CString::new(arg.clone()).unwrap());
-      arg_ptrs.push(cstrings.last().unwrap().as_ptr());
+  let mut i = 0;
+  let cmds = cmd_and_args.split(|s| s == "---");
+  for cmd in cmds {
+    let pid = fork();
+    if pid == 0 {
+      let mut cstrings = Vec::<CString>::new();
+      let mut arg_ptrs = Vec::<*const i8>::new();
+
+      cstrings.reserve(cmd.len());
+      arg_ptrs.reserve(cmd.len() + 1);
+
+      for arg in cmd.iter() {
+        cstrings.push(CString::new(arg.clone()).unwrap());
+        arg_ptrs.push(cstrings.last().unwrap().as_ptr());
+      }
+      arg_ptrs.push(ptr::null());
+
+      execvp(
+        CString::new(cmd[0].clone()).unwrap().as_ptr(),
+        arg_ptrs.as_ptr() as (*mut *const i8)
+      );
+      panic!("execvp failed");
     }
-    arg_ptrs.push(ptr::null());
+    else {
+      ret.push(pid);
+    }
 
-    execvp(
-      CString::new(cmd_and_args[0].clone()).unwrap().as_ptr(),
-      arg_ptrs.as_ptr() as (*mut *const i8)
-    );
-    panic!("execvp failed");
   }
-  return pid;
+
+  return ret;
 }
 
 extern fn accept_term(_signal: libc::c_int) {
@@ -148,15 +168,16 @@ fn main() {
     return;
   }
 
-  let main_pid: pid_t;
+  let mut pids: Vec<pid_t>;
   unsafe {
     let mut sa = mem::uninitialized::<sigaction>();
     sa.sa_handler = accept_term;
     sigaction(SIGTERM, &sa, ptr::null_mut());
     sigaction(SIGINT, &sa, ptr::null_mut());
 
-    main_pid = run_command(&matches.free);
+    pids = run_commands(&matches.free);
   }
-  println!("pid is {}", main_pid);
-  waitpid_reap_other_children(main_pid);
+
+  println!("pids are {:?}", pids);
+  wait_for_commands_to_exit(&mut pids);
 }

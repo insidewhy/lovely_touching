@@ -18,3 +18,11 @@ CMD ["/bin/lovely_touching", "--", "/bin/node", "app.js" ]
 Now you don't have to worry anymore!
 
 `lovely_touching` is written in `rust` so you don't need anything installed in the host machine to use the binary.
+
+## More stuff
+
+If you want to run multiple processes you can separate them with the argument `---`:
+```
+ADD lovely_touching /bin/lovely_touching
+CMD ["/bin/lovely_touching", "--", "/bin/runit", "---", "/bin/node", "app.js" ]
+```
