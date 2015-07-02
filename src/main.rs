@@ -173,6 +173,12 @@ fn main() {
     return;
   }
 
+  if matches.free.len() == 0 {
+    println!("must specify a command to run");
+    print_usage(&program, opts);
+    return;
+  }
+
   let mut pids: Vec<pid_t>;
   let mut sa = unsafe { mem::uninitialized::<sigaction>() };
   sa.sa_handler = accept_term;
