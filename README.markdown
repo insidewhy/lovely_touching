@@ -14,6 +14,7 @@ Instead just use `lovely_touching`:
 
     ```
     wget https://github.com/ohjames/lovely_touching/releases/download/v0.1.0/lovely_touching
+    chmod a+x lovely_touching
     ```
 
 2. Change your `Dockerfile` to this:
