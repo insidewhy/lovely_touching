@@ -8,12 +8,20 @@ CMD ["/bin/node", "app.js"]
 
 Oh no [this is no good!](https://blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/) - TLDR: Your process can get shutdown in a bad way and *zombie processes* will destroy you!
 
-Instead just use `lovely_touching` and change your `Dockerfile` to this:
+Instead just use `lovely_touching`:
 
-```
-ADD lovely_touching /bin/lovely_touching
-CMD ["/bin/lovely_touching", "--", "/bin/node", "app.js" ]
-```
+1. Download it (this binary will work on any Linux version from Centos/Redhat 5 and up):
+
+    ```
+    wget https://github.com/ohjames/lovely_touching/releases/download/v0.1.0/lovely_touching
+    ```
+
+2. Change your `Dockerfile` to this:
+
+    ```
+    ADD lovely_touching /bin/lovely_touching
+    CMD ["/bin/lovely_touching", "--", "/bin/node", "app.js" ]
+    ```
 
 Now you don't have to worry anymore!
 
