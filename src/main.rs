@@ -110,14 +110,18 @@ fn print_usage(program: &str, opts: Options) {
   print!("{}", opts.usage(&brief));
 }
 
-unsafe fn run_commands(cmd_and_args: &Vec<String>) -> Vec<pid_t> {
+fn run_commands(cmd_and_args: &Vec<String>) -> Vec<pid_t> {
   println!("running `{}'", cmd_and_args.connect(" "));
 
   let mut ret = Vec::<pid_t>::new();
 
   let cmds = cmd_and_args.split(|s| s == "---");
   for cmd in cmds {
-    let pid = fork();
+    let pid;
+    unsafe {
+      pid = fork();
+    }
+
     if pid == 0 {
       let mut cstrings = Vec::<CString>::new();
       let mut arg_ptrs = Vec::<*const i8>::new();
@@ -131,10 +135,12 @@ unsafe fn run_commands(cmd_and_args: &Vec<String>) -> Vec<pid_t> {
       }
       arg_ptrs.push(ptr::null());
 
-      execvp(
-        CString::new(cmd[0].clone()).unwrap().as_ptr(),
-        arg_ptrs.as_mut_ptr()
-      );
+      unsafe {
+        execvp(
+          CString::new(cmd[0].clone()).unwrap().as_ptr(),
+          arg_ptrs.as_mut_ptr()
+        );
+      }
       panic!("execvp failed");
     }
     else {
@@ -168,15 +174,15 @@ fn main() {
   }
 
   let mut pids: Vec<pid_t>;
+  let mut sa = unsafe { mem::uninitialized::<sigaction>() };
+  sa.sa_handler = accept_term;
+
   unsafe {
-    let mut sa = mem::uninitialized::<sigaction>();
-    sa.sa_handler = accept_term;
     sigaction(SIGTERM, &sa, ptr::null_mut());
     sigaction(SIGINT, &sa, ptr::null_mut());
-
-    pids = run_commands(&matches.free);
   }
 
+  pids = run_commands(&matches.free);
   println!("pids are {:?}", pids);
   wait_for_commands_to_exit(&mut pids);
 }
