@@ -180,7 +180,7 @@ fn main() {
   }
 
   let mut pids: Vec<pid_t>;
-  let mut sa = unsafe { mem::uninitialized::<sigaction>() };
+  let mut sa = unsafe { mem::zeroed::<sigaction>() };
   sa.sa_handler = accept_term;
 
   unsafe {
