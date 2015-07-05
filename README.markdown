@@ -47,3 +47,5 @@ If you want to run multiple processes you can separate them with the argument `-
 ADD lovely_touching /bin/lovely_touching
 CMD ["/bin/lovely_touching", "--", "/bin/runit", "---", "/bin/node", "app.js" ]
 ```
+
+If you want an init system with even less overhead then try [smell-baron](https://github.com/ohjames/smell-baron) which implements the same functionality in C. The binary ends up being around 8k instead of the 800k needed by the rust runtime.
